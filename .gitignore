@@ -1,0 +1,12 @@
+# Raw downloaded sources and intermediate build artifacts
+/data/
+/build/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# macOS
+.DS_Store

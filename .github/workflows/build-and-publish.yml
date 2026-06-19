@@ -1,0 +1,67 @@
+name: Build and publish iOS dictionary
+
+on:
+  workflow_dispatch:
+    inputs:
+      dictionary_version:
+        description: "Dictionary version (integer, monotonically increasing)"
+        required: true
+        type: string
+      release_notes:
+        description: "Release notes"
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run normalization tests
+        run: python tests/test_normalization.py
+
+      - name: Download sources
+        run: python scripts/download_sources.py   # av-ru.jsonl + ru-av.jsonl
+
+      - name: Analyze sources
+        run: python scripts/analyze_sources.py
+
+      - name: Build dictionary
+        run: |
+          python scripts/build_dictionary.py \
+            --version "${{ inputs.dictionary_version }}" \
+            --notes "${{ inputs.release_notes }}"
+
+      - name: Validate (quality gates)
+        run: python scripts/validate_dictionary.py
+
+      - name: Package release
+        run: python scripts/package_release.py --version "${{ inputs.dictionary_version }}"
+
+      - name: Generate latest.json
+        run: |
+          python scripts/generate_latest.py \
+            --version "${{ inputs.dictionary_version }}" \
+            --notes "${{ inputs.release_notes }}"
+
+      - name: Commit published files
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add public/
+          git commit -m "Publish dictionary v${{ inputs.dictionary_version }}" || echo "No changes"
+          git push
+
+# GitHub Pages serves the public/ folder (configure in repo Settings -> Pages:
+# Source = Deploy from a branch, branch = main, folder = /public).
+# Old releases are kept in public/releases for rollback (see PLAN.md §17).
