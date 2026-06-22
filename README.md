@@ -7,7 +7,10 @@
 - `ios.avar.me` отдаёт промо-лендинг **и** endpoint обновлений: `latest.json` + `releases/*.zip`.
 - iOS-приложение живёт в отдельном репозитории `avarme-ios`.
 
-Полное описание архитектуры — в [`PLAN.md`](PLAN.md).
+Документация:
+- [`PLAN.md`](PLAN.md) — полная архитектура проекта
+- [`MAINTENANCE.md`](MAINTENANCE.md) — как публиковать новую версию словаря, деплой, откат
+- [`docs/source-schema.md`](docs/source-schema.md) — схема исходных данных и семантика полей
 
 ## Источники
 
