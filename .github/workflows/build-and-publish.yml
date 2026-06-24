@@ -14,10 +14,19 @@ on:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -62,6 +71,20 @@ jobs:
           git commit -m "Publish dictionary v${{ inputs.dictionary_version }}" || echo "No changes"
           git push
 
-# GitHub Pages serves the public/ folder (configure in repo Settings -> Pages:
-# Source = Deploy from a branch, branch = main, folder = /public).
+      # Deploy here directly: a push made by GITHUB_TOKEN does NOT trigger the
+      # separate deploy-pages.yml workflow, so the build must publish itself.
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload public/ artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+# GitHub Pages is configured as build_type=workflow; this workflow both builds
+# the release and deploys public/ to ios.avar.me in one run.
 # Old releases are kept in public/releases for rollback (see PLAN.md §17).
