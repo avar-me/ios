@@ -30,6 +30,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # full history so commit/push can rebase cleanly
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -68,8 +70,19 @@ jobs:
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git add public/
-          git commit -m "Publish dictionary v${{ inputs.dictionary_version }}" || echo "No changes"
-          git push
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git commit -m "Publish dictionary v${{ inputs.dictionary_version }}"
+          # Remote may have advanced; rebase and retry the push a few times.
+          for i in 1 2 3; do
+            git pull --rebase --autostash origin "${GITHUB_REF_NAME}" || true
+            if git push origin "HEAD:${GITHUB_REF_NAME}"; then
+              echo "Pushed."; break
+            fi
+            echo "Push attempt $i failed, retrying…"; sleep 3
+          done
 
       # Deploy here directly: a push made by GITHUB_TOKEN does NOT trigger the
       # separate deploy-pages.yml workflow, so the build must publish itself.
