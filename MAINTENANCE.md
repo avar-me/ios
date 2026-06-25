@@ -27,10 +27,14 @@ Push в `public/**` автоматически триггерит деплой G
 
 ### Через GitHub Actions
 
-Actions → **Build and publish iOS dictionary** → Run workflow → ввести
-`dictionary_version` и `release_notes`. Прогонит тесты → весь пайплайн →
-коммит в `public/` → **и сам задеплоит на Pages** (деплой встроен в этот
-workflow, т.к. push от `GITHUB_TOKEN` не триггерит отдельный `deploy-pages.yml`).
+Actions → **Build and publish iOS dictionary** → **Run workflow**.
+- `dictionary_version` — **оставь пустым**: версия сама возьмётся из `latest.json` и +1.
+  (Можно задать вручную, если нужен конкретный номер.)
+- `release_notes` — по желанию.
+
+Прогонит тесты → весь пайплайн → коммит в `public/` → **и сам задеплоит на Pages**
+(деплой встроен в этот workflow, т.к. push от `GITHUB_TOKEN` не триггерит отдельный
+`deploy-pages.yml`; push устойчив к гонкам — rebase + повтор).
 
 > Если когда-то увидишь, что релиз закоммичен, но `ios.avar.me` отдаёт старую
 > версию — запусти деплой вручную: `gh workflow run deploy-pages.yml`.

@@ -4,11 +4,11 @@ on:
   workflow_dispatch:
     inputs:
       dictionary_version:
-        description: "Dictionary version (integer, monotonically increasing)"
-        required: true
+        description: "Version number (leave EMPTY to auto-increment from latest.json)"
+        required: false
         type: string
       release_notes:
-        description: "Release notes"
+        description: "Release notes (optional)"
         required: false
         type: string
 
@@ -38,6 +38,18 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Determine version
+        id: ver
+        run: |
+          if [ -n "${{ inputs.dictionary_version }}" ]; then
+            V="${{ inputs.dictionary_version }}"
+          else
+            CUR=$(python3 -c "import json; print(json.load(open('public/latest.json'))['dictionary_version'])")
+            V=$((CUR + 1))
+          fi
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+          echo "Publishing dictionary version: $V"
+
       - name: Run normalization tests
         run: python tests/test_normalization.py
 
@@ -50,19 +62,19 @@ jobs:
       - name: Build dictionary
         run: |
           python scripts/build_dictionary.py \
-            --version "${{ inputs.dictionary_version }}" \
+            --version "${{ steps.ver.outputs.version }}" \
             --notes "${{ inputs.release_notes }}"
 
       - name: Validate (quality gates)
         run: python scripts/validate_dictionary.py
 
       - name: Package release
-        run: python scripts/package_release.py --version "${{ inputs.dictionary_version }}"
+        run: python scripts/package_release.py --version "${{ steps.ver.outputs.version }}"
 
       - name: Generate latest.json
         run: |
           python scripts/generate_latest.py \
-            --version "${{ inputs.dictionary_version }}" \
+            --version "${{ steps.ver.outputs.version }}" \
             --notes "${{ inputs.release_notes }}"
 
       - name: Commit published files
@@ -74,7 +86,7 @@ jobs:
             echo "No changes to commit."
             exit 0
           fi
-          git commit -m "Publish dictionary v${{ inputs.dictionary_version }}"
+          git commit -m "Publish dictionary v${{ steps.ver.outputs.version }}"
           # Remote may have advanced; rebase and retry the push a few times.
           for i in 1 2 3; do
             git pull --rebase --autostash origin "${GITHUB_REF_NAME}" || true
