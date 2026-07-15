@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "dictionary_version": 17,
-  "build_id": "2026-07-15T22-05-44Z",
+  "dictionary_version": 18,
+  "build_id": "2026-07-15T22-37-09Z",
   "sources": [
     {
       "name": "av-ru",
       "url": "https://sources.avar.me/data/av-ru.jsonl",
-      "sha256": "d8e8fa06ff6a8bfc7406af4f2f71757f3cb6fd6ab8ef1d92bc9f25df87e8b1aa"
+      "sha256": "c4c3c84fea5d64972334bb5b1fdb4b727f887add3c525a437dc7032e40644320"
     },
     {
       "name": "ru-av",
@@ -16,19 +16,19 @@
   ],
   "dictionaries": {
     "av-ru": {
-      "entry_count": 22856,
-      "index_terms": 83555
+      "entry_count": 22858,
+      "index_terms": 83563
     },
     "ru-av": {
       "entry_count": 38874,
       "index_terms": 99732
     }
   },
-  "entry_count_total": 61730,
-  "package_url": "https://ios.avar.me/releases/dictionary-v17.zip",
-  "package_sha256": "a0111ce0865af7bbaa002c601355d3fe171f76d262f37bed5f11d96c28ce9bd7",
-  "package_size_bytes": 15327326,
-  "created_at": "2026-07-15T22:05:44Z",
+  "entry_count_total": 61732,
+  "package_url": "https://ios.avar.me/releases/dictionary-v18.zip",
+  "package_sha256": "7897d72868b3567be01c4984ba81edc14f93256b28e24f8d9bf969361642456a",
+  "package_size_bytes": 15327578,
+  "created_at": "2026-07-15T22:37:09Z",
   "min_app_version": "1.0.0",
   "notes": ""
 }
