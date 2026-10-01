@@ -96,10 +96,17 @@ def load_entries(dict_name: str, path, used_ids: set) -> list[dict]:
 
 
 def build_word_index(entries: list[dict]) -> dict[str, list[str]]:
-    """Map raw headword -> list of entry ids (for resolving cross-references)."""
+    """Map raw headword, and its spelling/gender variants -> entry ids (for
+    resolving cross-references). A see_also/relation target naming an
+    alternate spelling (e.g. "гьабги" for "абги") now resolves to that
+    entry — including, harmlessly, to itself when the target happens to be
+    one of the entry's own variant spellings.
+    """
     idx: dict[str, list[str]] = {}
     for e in entries:
         idx.setdefault(e["word"], []).append(e["id"])
+        for variant in (e.get("spelling_forms") or []) + (e.get("gender_forms") or []):
+            idx.setdefault(variant, []).append(e["id"])
     return idx
 
 
@@ -172,6 +179,10 @@ def search_rows(entry: dict) -> list[tuple[str, str, str, int]]:
 
     add(head_lang, entry["word"], 0)            # headword
     for form in entry.get("forms", []):         # inflected forms
+        add(head_lang, form, 1)
+    for form in entry.get("spelling_forms") or []:   # alternate spellings
+        add(head_lang, form, 1)
+    for form in entry.get("gender_forms") or []:     # gender-agreement forms
         add(head_lang, form, 1)
     for sense in entry.get("senses", []):       # translation / definition
         add(sense_lang, sense.get("text"), 2)
