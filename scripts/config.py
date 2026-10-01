@@ -54,3 +54,13 @@ MAX_RELATIVE_DROP = 0.05
 
 # Minimum acceptable package size (sanity check against an empty archive).
 MIN_PACKAGE_SIZE_BYTES = 1_000_000
+
+# --- External resource links, bundled into latest.json for the app's links UI ----
+
+MANIFEST_LINKS: list[dict[str, str]] = [
+    {"id": "site", "title": "avar.me", "url": "https://avar.me"},
+    {"id": "stage", "title": "ru.avar.me (бета)", "url": "https://ru.avar.me"},
+    {"id": "bot", "title": "Telegram-бот", "url": "https://t.me/avar_me_bot"},
+    {"id": "channel", "title": "Telegram-канал", "url": "https://t.me/avarlangme"},
+    {"id": "tv", "title": "Авар ТВ", "url": "https://tv.avar.me"},
+]

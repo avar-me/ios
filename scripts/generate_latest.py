@@ -19,6 +19,7 @@ import sys
 from config import (
     BUILD_DIR,
     LATEST_JSON,
+    MANIFEST_LINKS,
     MIN_APP_VERSION,
     RELEASES_DIR,
     SCHEMA_VERSION,
@@ -64,6 +65,7 @@ def main() -> int:
         "created_at": created_at,
         "min_app_version": MIN_APP_VERSION,
         "notes": args.notes or meta.get("notes", ""),
+        "links": MANIFEST_LINKS,
     }
 
     LATEST_JSON.write_text(

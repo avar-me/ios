@@ -181,6 +181,20 @@ def search_rows(entry: dict) -> list[tuple[str, str, str, int]]:
     return rows
 
 
+def example_rows(entry: dict) -> list[tuple[str, str, str, str]]:
+    """Yield (entry_id, av, ru, comment) rows for the phrase/example FTS index."""
+    rows: list[tuple[str, str, str, str]] = []
+    eid = entry["id"]
+    for sense in entry.get("senses", []):
+        for ex in sense.get("examples", []) or []:
+            av = ex.get("av") or ""
+            ru = ex.get("ru") or ""
+            if not av and not ru:
+                continue
+            rows.append((eid, av, ru, ex.get("comment") or ""))
+    return rows
+
+
 SCHEMA = """
 PRAGMA journal_mode = OFF;
 PRAGMA synchronous = OFF;
@@ -202,11 +216,26 @@ CREATE TABLE search (
     entry_id TEXT NOT NULL,
     weight   INTEGER NOT NULL      -- 0 head, 1 form, 2 sense, 3 example
 );
+
+CREATE TABLE examples (
+    id       INTEGER PRIMARY KEY,
+    entry_id TEXT NOT NULL,
+    av       TEXT,
+    ru       TEXT,
+    comment  TEXT
+);
+
+CREATE VIRTUAL TABLE examples_fts USING fts5(
+    av, ru, comment,
+    content='examples',
+    content_rowid='id'
+);
 """
 
 INDEXES = """
 CREATE INDEX idx_search_lang_term ON search(lang, term);
 CREATE INDEX idx_entries_dict ON entries(dict);
+CREATE INDEX idx_examples_entry ON examples(entry_id);
 """
 
 
@@ -234,6 +263,7 @@ def build(version: int, notes: str) -> dict:
         index_terms: set[str] = set()
         entry_rows = []
         all_search_rows = []
+        all_example_rows = []
         for e in entries:
             t = transform_entry(e, word_index)
             entry_rows.append((t["id"], t["dict"], t["word"], t.get("homonym"),
@@ -241,6 +271,7 @@ def build(version: int, notes: str) -> dict:
             srows = search_rows(t)
             all_search_rows.extend(srows)
             index_terms.update((lang, term) for lang, term, _, _ in srows)
+            all_example_rows.extend(example_rows(t))
 
         conn.executemany(
             "INSERT INTO entries(id,dict,word,homonym,pos,data) VALUES (?,?,?,?,?,?)",
@@ -250,6 +281,10 @@ def build(version: int, notes: str) -> dict:
             "INSERT INTO search(lang,term,entry_id,weight) VALUES (?,?,?,?)",
             all_search_rows,
         )
+        conn.executemany(
+            "INSERT INTO examples(entry_id,av,ru,comment) VALUES (?,?,?,?)",
+            all_example_rows,
+        )
 
         per_dict_stats[name] = {
             "entry_count": len(entries),
@@ -258,9 +293,10 @@ def build(version: int, notes: str) -> dict:
         total_entries += len(entries)
         sources_meta.append({"name": name, "url": src["url"], "sha256": sha256_file(path)})
         print(f"[{name}] {len(entries):,} entries, {len(index_terms):,} index terms, "
-              f"{len(all_search_rows):,} search rows")
+              f"{len(all_search_rows):,} search rows, {len(all_example_rows):,} example rows")
 
     conn.executescript(INDEXES)
+    conn.execute("INSERT INTO examples_fts(examples_fts) VALUES('rebuild')")
 
     created_at = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     meta = {
