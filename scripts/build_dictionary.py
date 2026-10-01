@@ -124,6 +124,7 @@ def transform_entry(entry: dict, word_index: dict[str, list[str]]) -> dict:
         "forms": entry.get("forms", []),
         "labels": entry.get("labels", []),
         "gender_forms": entry.get("gender_forms"),
+        "spelling_forms": entry.get("spelling_forms"),
         "exclamation": entry.get("exclamation"),
         "precomment": entry.get("precomment"),
         "senses": [],
