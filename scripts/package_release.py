@@ -1,7 +1,8 @@
 """Package the built dictionary into a release ZIP + checksum.
 
 Produces:
-    public/releases/dictionary-v{N}.zip   (contains dictionary/metadata.json + dictionary/dictionary.sqlite)
+    public/releases/dictionary-v{N}.zip   (dictionary/metadata.json, dictionary/dictionary.sqlite,
+                                            dictionary/icons/*.png from assets/link_icons/)
     public/checksums/dictionary-v{N}.sha256
 
 Standard library only.
@@ -17,7 +18,7 @@ import hashlib
 import sys
 import zipfile
 
-from config import BUILD_DIR, CHECKSUMS_DIR, MIN_PACKAGE_SIZE_BYTES, RELEASES_DIR
+from config import BUILD_DIR, CHECKSUMS_DIR, LINK_ICONS_DIR, MIN_PACKAGE_SIZE_BYTES, RELEASES_DIR
 
 
 def sha256_file(path) -> str:
@@ -47,6 +48,9 @@ def main() -> int:
     with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as zf:
         zf.write(meta_path, "dictionary/metadata.json")
         zf.write(db_path, "dictionary/dictionary.sqlite")
+        if LINK_ICONS_DIR.is_dir():
+            for icon_path in sorted(LINK_ICONS_DIR.glob("*.png")):
+                zf.write(icon_path, f"dictionary/icons/{icon_path.name}")
 
     size = zip_path.stat().st_size
     if size < MIN_PACKAGE_SIZE_BYTES:

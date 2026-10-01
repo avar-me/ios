@@ -32,6 +32,11 @@ RELEASES_DIR = PUBLIC_DIR / "releases"
 CHECKSUMS_DIR = PUBLIC_DIR / "checksums"
 LATEST_JSON = PUBLIC_DIR / "latest.json"
 
+# Small static assets (committed, unlike data/build) distributed inside the
+# dictionary release zip — e.g. icons for the external resource links below.
+ASSETS_DIR = ROOT / "assets"
+LINK_ICONS_DIR = ASSETS_DIR / "link_icons"
+
 # --- Schema / endpoint -------------------------------------------------------
 
 SCHEMA_VERSION = 1
@@ -56,11 +61,17 @@ MAX_RELATIVE_DROP = 0.05
 MIN_PACKAGE_SIZE_BYTES = 1_000_000
 
 # --- External resource links, bundled into latest.json for the app's links UI ----
+#
+# `icon` is a filename in LINK_ICONS_DIR, packaged into the release zip at
+# dictionary/icons/<icon> (see package_release.py) — the app loads it from
+# the installed dictionary directory (or the app-bundled copy), never over
+# the network. To update an icon: replace/add the PNG in assets/link_icons/
+# and cut a new dictionary release.
 
 MANIFEST_LINKS: list[dict[str, str]] = [
-    {"id": "site", "title": "avar.me", "url": "https://avar.me"},
-    {"id": "stage", "title": "ru.avar.me (бета)", "url": "https://ru.avar.me"},
-    {"id": "bot", "title": "Telegram-бот", "url": "https://t.me/avar_me_bot"},
-    {"id": "channel", "title": "Telegram-канал", "url": "https://t.me/avarlangme"},
-    {"id": "tv", "title": "Авар ТВ", "url": "https://tv.avar.me"},
+    {"id": "site", "title": "avar.me", "url": "https://avar.me", "icon": "site.png"},
+    {"id": "stage", "title": "ru.avar.me (бета)", "url": "https://ru.avar.me", "icon": "stage.png"},
+    {"id": "bot", "title": "Telegram-бот", "url": "https://t.me/avar_me_bot", "icon": "bot.png"},
+    {"id": "channel", "title": "Telegram-канал", "url": "https://t.me/avarlangme", "icon": "channel.png"},
+    {"id": "tv", "title": "Авар ТВ", "url": "https://tv.avar.me", "icon": "tv.png"},
 ]
