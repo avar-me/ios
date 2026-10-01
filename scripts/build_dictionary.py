@@ -98,15 +98,26 @@ def load_entries(dict_name: str, path, used_ids: set) -> list[dict]:
 def build_word_index(entries: list[dict]) -> dict[str, list[str]]:
     """Map raw headword, and its spelling/gender variants -> entry ids (for
     resolving cross-references). A see_also/relation target naming an
-    alternate spelling (e.g. "гьабги" for "абги") now resolves to that
-    entry — including, harmlessly, to itself when the target happens to be
-    one of the entry's own variant spellings.
+    alternate spelling (e.g. "гьабги" for "абги") resolves to that entry —
+    including, harmlessly, to itself when the target happens to be one of
+    the entry's own variant spellings.
+
+    Real headwords take priority over anyone else's variant spelling: e.g.
+    "макъан" is both its own article (melody/tune) AND listed in "бакъан"'s
+    spelling_forms. Registering headwords first and then skipping any
+    variant that collides with one keeps "see also: макъан" resolving to
+    the макъан article itself, not to бакъан.
     """
     idx: dict[str, list[str]] = {}
     for e in entries:
         idx.setdefault(e["word"], []).append(e["id"])
+
+    for e in entries:
         for variant in (e.get("spelling_forms") or []) + (e.get("gender_forms") or []):
+            if variant in idx:
+                continue  # a real article owns this name — don't shadow it
             idx.setdefault(variant, []).append(e["id"])
+
     return idx
 
 
