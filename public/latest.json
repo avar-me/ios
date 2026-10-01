@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "dictionary_version": 55,
-  "build_id": "2026-10-01T11-19-04Z",
+  "dictionary_version": 56,
+  "build_id": "2026-10-01T11-32-55Z",
   "sources": [
     {
       "name": "av-ru",
@@ -17,7 +17,7 @@
   "dictionaries": {
     "av-ru": {
       "entry_count": 22871,
-      "index_terms": 83490
+      "index_terms": 86955
     },
     "ru-av": {
       "entry_count": 38937,
@@ -25,12 +25,12 @@
     }
   },
   "entry_count_total": 61808,
-  "package_url": "https://ios.avar.me/releases/dictionary-v55.zip",
-  "package_sha256": "2cf9ea2371fa0afdfedf2dde695074ee096dfc34cdd4f777c12fe4eb4b6dfc66",
-  "package_size_bytes": 20996814,
-  "created_at": "2026-10-01T11:19:04Z",
+  "package_url": "https://ios.avar.me/releases/dictionary-v56.zip",
+  "package_sha256": "776c260e4cfdfe2b2071acf0a12542000d2a455789a8856838db1d834a1dca41",
+  "package_size_bytes": 21078796,
+  "created_at": "2026-10-01T11:32:55Z",
   "min_app_version": "1.0.0",
-  "notes": "spelling_forms в данных словаря",
+  "notes": "Поиск и see also по spelling_forms/gender_forms",
   "links": [
     {
       "id": "site",
