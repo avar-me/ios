@@ -5,6 +5,7 @@ No external dependencies — standard library only (Python 3.12).
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 # --- Source dictionaries (two independent dictionaries, not mirrors) ---------
@@ -62,16 +63,12 @@ MIN_PACKAGE_SIZE_BYTES = 1_000_000
 
 # --- External resource links, bundled into latest.json for the app's links UI ----
 #
+# Edit assets/links.json directly (title/url/icon) — no code changes needed.
 # `icon` is a filename in LINK_ICONS_DIR, packaged into the release zip at
 # dictionary/icons/<icon> (see package_release.py) — the app loads it from
 # the installed dictionary directory (or the app-bundled copy), never over
-# the network. To update an icon: replace/add the PNG in assets/link_icons/
+# the network. To add/replace an icon: drop the PNG in assets/link_icons/
 # and cut a new dictionary release.
 
-MANIFEST_LINKS: list[dict[str, str]] = [
-    {"id": "site", "title": "avar.me", "url": "https://avar.me", "icon": "site.png"},
-    {"id": "stage", "title": "ru.avar.me (бета)", "url": "https://ru.avar.me", "icon": "stage.png"},
-    {"id": "bot", "title": "Telegram-бот", "url": "https://t.me/avar_me_bot", "icon": "bot.png"},
-    {"id": "channel", "title": "Telegram-канал", "url": "https://t.me/avarlangme", "icon": "channel.png"},
-    {"id": "tv", "title": "Авар ТВ", "url": "https://tv.avar.me", "icon": "tv.png"},
-]
+LINKS_JSON = ASSETS_DIR / "links.json"
+MANIFEST_LINKS: list[dict[str, str]] = json.loads(LINKS_JSON.read_text(encoding="utf-8"))
