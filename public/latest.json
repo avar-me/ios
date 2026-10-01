@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "dictionary_version": 52,
-  "build_id": "2026-10-01T07-53-09Z",
+  "dictionary_version": 53,
+  "build_id": "2026-10-01T09-13-46Z",
   "sources": [
     {
       "name": "av-ru",
@@ -25,10 +25,37 @@
     }
   },
   "entry_count_total": 61808,
-  "package_url": "https://ios.avar.me/releases/dictionary-v52.zip",
-  "package_sha256": "fdad72d0025f229584a0cbc9563bcda37cbbae41cbb9c425e7bb3c481f4b3e8f",
-  "package_size_bytes": 15250382,
-  "created_at": "2026-10-01T07:53:09Z",
+  "package_url": "https://ios.avar.me/releases/dictionary-v53.zip",
+  "package_sha256": "71bf3ee93bc64bff50044adba4928138bcf660b9410dd1d5907c59d52493d68f",
+  "package_size_bytes": 20836234,
+  "created_at": "2026-10-01T09:13:46Z",
   "min_app_version": "1.0.0",
-  "notes": ""
+  "notes": "Фразы (поиск по примерам) и ссылки на внешние ресурсы",
+  "links": [
+    {
+      "id": "site",
+      "title": "avar.me",
+      "url": "https://avar.me"
+    },
+    {
+      "id": "stage",
+      "title": "ru.avar.me (бета)",
+      "url": "https://ru.avar.me"
+    },
+    {
+      "id": "bot",
+      "title": "Telegram-бот",
+      "url": "https://t.me/avar_me_bot"
+    },
+    {
+      "id": "channel",
+      "title": "Telegram-канал",
+      "url": "https://t.me/avarlangme"
+    },
+    {
+      "id": "tv",
+      "title": "Авар ТВ",
+      "url": "https://tv.avar.me"
+    }
+  ]
 }
