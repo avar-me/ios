@@ -11,6 +11,16 @@ on:
         description: "Release notes (optional)"
         required: false
         type: string
+      force:
+        description: "Publish even if sources.avar.me data hasn't changed"
+        required: false
+        type: boolean
+        default: false
+  # Проверяем sources.avar.me на изменения раз в сутки; публикуем новую версию,
+  # только если av-ru.jsonl/ru-av.jsonl реально изменились (см. шаг "Check for
+  # source changes" — версия словаря не инкрементируется впустую).
+  schedule:
+    - cron: "35 4 * * *"
 
 permissions:
   contents: write
@@ -38,7 +48,31 @@ jobs:
         with:
           python-version: "3.12"
 
+      # sources.avar.me publishes a <file>.jsonl.sha256 sidecar next to each
+      # dictionary — fetching those few bytes lets us detect "no changes" without
+      # downloading the full av-ru.jsonl/ru-av.jsonl (done for real below, only
+      # when something changed).
+      - name: Check for source changes
+        id: check
+        run: |
+          AV_SHA=$(curl -fsSL https://sources.avar.me/data/av-ru.jsonl.sha256 | awk '{print $1}')
+          RU_SHA=$(curl -fsSL https://sources.avar.me/data/ru-av.jsonl.sha256 | awk '{print $1}')
+          PREV_AV=$(python3 -c "import json; print(next(s['sha256'] for s in json.load(open('public/latest.json'))['sources'] if s['name'] == 'av-ru'))")
+          PREV_RU=$(python3 -c "import json; print(next(s['sha256'] for s in json.load(open('public/latest.json'))['sources'] if s['name'] == 'ru-av'))")
+          echo "av-ru: prev=$PREV_AV new=$AV_SHA"
+          echo "ru-av: prev=$PREV_RU new=$RU_SHA"
+          if [ "$AV_SHA" = "$PREV_AV" ] && [ "$RU_SHA" = "$PREV_RU" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Skip publish (no source changes)
+        if: steps.check.outputs.changed != 'true' && inputs.force != true
+        run: echo "av-ru.jsonl/ru-av.jsonl unchanged since last publish — skipping build, no version bump."
+
       - name: Determine version
+        if: steps.check.outputs.changed == 'true' || inputs.force == true
         id: ver
         run: |
           if [ -n "${{ inputs.dictionary_version }}" ]; then
@@ -51,33 +85,41 @@ jobs:
           echo "Publishing dictionary version: $V"
 
       - name: Run normalization tests
+        if: steps.check.outputs.changed == 'true' || inputs.force == true
         run: python tests/test_normalization.py
 
       - name: Download sources
+        if: steps.check.outputs.changed == 'true' || inputs.force == true
         run: python scripts/download_sources.py   # av-ru.jsonl + ru-av.jsonl
 
       - name: Analyze sources
+        if: steps.check.outputs.changed == 'true' || inputs.force == true
         run: python scripts/analyze_sources.py
 
       - name: Build dictionary
+        if: steps.check.outputs.changed == 'true' || inputs.force == true
         run: |
           python scripts/build_dictionary.py \
             --version "${{ steps.ver.outputs.version }}" \
             --notes "${{ inputs.release_notes }}"
 
       - name: Validate (quality gates)
+        if: steps.check.outputs.changed == 'true' || inputs.force == true
         run: python scripts/validate_dictionary.py
 
       - name: Package release
+        if: steps.check.outputs.changed == 'true' || inputs.force == true
         run: python scripts/package_release.py --version "${{ steps.ver.outputs.version }}"
 
       - name: Generate latest.json
+        if: steps.check.outputs.changed == 'true' || inputs.force == true
         run: |
           python scripts/generate_latest.py \
             --version "${{ steps.ver.outputs.version }}" \
             --notes "${{ inputs.release_notes }}"
 
       - name: Commit published files
+        if: steps.check.outputs.changed == 'true' || inputs.force == true
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
@@ -99,14 +141,17 @@ jobs:
       # Deploy here directly: a push made by GITHUB_TOKEN does NOT trigger the
       # separate deploy-pages.yml workflow, so the build must publish itself.
       - name: Configure Pages
+        if: steps.check.outputs.changed == 'true' || inputs.force == true
         uses: actions/configure-pages@v5
 
       - name: Upload public/ artifact
+        if: steps.check.outputs.changed == 'true' || inputs.force == true
         uses: actions/upload-pages-artifact@v3
         with:
           path: public
 
       - name: Deploy to GitHub Pages
+        if: steps.check.outputs.changed == 'true' || inputs.force == true
         id: deployment
         uses: actions/deploy-pages@v4
 
